@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: ms-authentication
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret: "M1Qu3r1d0N4P0L30Nk41s3r12345678901234567890" # 512 bits
+    expiration: 2700000 # 45 minutes in milliseconds
