@@ -1,0 +1,3 @@
+INSERT INTO KC_ROLE (ROLE_UUID, NAME, ENABLED) VALUES
+('3f5a8c2e-9d4b-4a7c-8f1e-2b7d6c9e5a11', 'ADMIN', true),
+('a91d0f74-6c3e-47b2-9a5d-8e2c1f0b3d66', 'CLIENT', true);

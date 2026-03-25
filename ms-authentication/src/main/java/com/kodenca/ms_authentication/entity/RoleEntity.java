@@ -1,8 +1,11 @@
 package com.kodenca.ms_authentication.entity;
 
+import com.kodenca.ms_authentication.util.RoleEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -28,19 +31,22 @@ import java.util.UUID;
 public class RoleEntity {
 
     @Id
+    @Column(name = "ROLE_UUID")
     private String roleUuId;
 
-    @Column(unique = true, nullable = false)
-    private String name;
+    @Column(name = "NAME", unique = true, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RoleEnum name;
 
-    @Column(nullable = false)
+    @Column(name = "ENABLED", nullable = false)
     private boolean enabled = true;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
     @PrePersist

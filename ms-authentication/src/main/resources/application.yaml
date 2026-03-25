@@ -10,6 +10,8 @@ spring:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: true
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -17,11 +19,21 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
 
 server:
   port: 8080
 
 security:
   jwt:
-    secret: "M1Qu3r1d0N4P0L30Nk41s3r12345678901234567890" # 512 bits
-    expiration: 2700000 # 45 minutes in milliseconds
+    secret: "${JWT_SECRET:M1Qu3r1d0N4P0L30Nk41s3r12345678901234567890}" # 512 bits
+    expiration: "${JWT_DURATION:2700000}" # 45 minutes in milliseconds
+
+logging:
+  level:
+    com.kodenca.ms_authentication: DEBUG
+    org.springframework.security: DEBUG

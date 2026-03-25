@@ -3,6 +3,7 @@ package com.kodenca.ms_authentication.repository;
 import com.kodenca.ms_authentication.entity.RoleEntity;
 import com.kodenca.ms_authentication.entity.jpa.IRoleJpaRepository;
 import com.kodenca.ms_authentication.repository.contract.IRoleRepository;
+import com.kodenca.ms_authentication.util.RoleEnum;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ public class RoleRepository implements IRoleRepository {
     }
 
     @Override
-    public Optional<RoleEntity> getRoleName(String name) {
+    public Optional<RoleEntity> getRoleName(RoleEnum name) {
         return roleJpaRepository.findByName(name);
     }
 }

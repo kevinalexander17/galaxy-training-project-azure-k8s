@@ -16,7 +16,7 @@ public class UserRepository implements IUserRepository {
     }
     
     @Override
-    public Optional<UserEntity> getUserByUserName(final String userName) {
+    public Optional<UserEntity> findByUserNameWithRole(final String userName) {
         return iUserJpaRepository.findByUserName(userName);
     }
     
