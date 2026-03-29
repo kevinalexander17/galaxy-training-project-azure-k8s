@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
-import static com.kodenca.ms_authentication.util.Constants.ROLE_CLAIM;
+import static com.kodenca.ms_authentication.util.Constants.CLAIM_USER_NAME;
+import static com.kodenca.ms_authentication.util.Constants.CLAIM_ROLE;
 
 @Component
 public class JwtUtil {
@@ -18,10 +19,11 @@ public class JwtUtil {
     @Value("${security.jwt.expiration}")
     private long expiration;
 
-    public String generateToken(final String userName, final String role){
+    public String generateToken(final String userId, final String userName, final String role){
         return Jwts.builder()
-                .subject(userName)
-                .claim(ROLE_CLAIM, role)
+                .subject(userId)
+                .claim(CLAIM_USER_NAME, userName)
+                .claim(CLAIM_ROLE, role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
@@ -41,6 +43,6 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        return extractClaims(token).get(ROLE_CLAIM, String.class);
+        return extractClaims(token).get(CLAIM_ROLE, String.class);
     }
 }
