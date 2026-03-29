@@ -55,13 +55,13 @@ public class AuthServiceImpl implements IAuthService {
         //saving role
         RoleEnum roleEnum = RoleEnum.valueOf(registerRequest.getRole());
         Optional<RoleEntity> roleEntity = roleRepository.getRoleName(roleEnum);
-        if(roleEntity.isEmpty()){
+        if (roleEntity.isEmpty()) {
             throw new RoleNotFoundException(ROLE_NOT_FOUND + registerRequest.getRole());
         }
         userEntity.setRoleEntity(roleEntity.get());
         UserEntity savedUser = userRepository.createNewUser(userEntity);
 
-        String token = jwtUtil.generateToken(savedUser.getUserName(), savedUser.getRoleEntity().getName().toString());
+        String token = jwtUtil.generateToken(savedUser.getUserUuId(), savedUser.getUserName(), savedUser.getRoleEntity().getName().toString());
 
         return new AuthResponse(token);
     }
@@ -76,7 +76,7 @@ public class AuthServiceImpl implements IAuthService {
             throw new UserNotFoundException(INVALID_PASSWORD);
         }
 
-        String token = jwtUtil.generateToken(user.getUserName(), user.getRoleEntity().getName().toString());
+        String token = jwtUtil.generateToken(user.getUserUuId(), user.getUserName(), user.getRoleEntity().getName().toString());
 
         return new AuthResponse(token);
     }
