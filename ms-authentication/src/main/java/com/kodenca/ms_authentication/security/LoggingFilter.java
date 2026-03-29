@@ -7,7 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.util.StreamUtils;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,18 +28,22 @@ public class LoggingFilter extends OncePerRequestFilter {
 
         long start = System.currentTimeMillis();
         
+        // Wrap request y response para poder leer el body múltiples veces
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+        ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
+        
         // Log básico del request
         log.info("=== REQUEST ===");
-        log.info("Method: {} {}", request.getMethod(), request.getRequestURI());
-        log.info("Content-Type: {}", request.getContentType());
-        log.info("Content-Length: {}", request.getContentLength());
+        log.info("Method: {} {}", requestWrapper.getMethod(), requestWrapper.getRequestURI());
+        log.info("Content-Type: {}", requestWrapper.getContentType());
+        log.info("Content-Length: {}", requestWrapper.getContentLength());
         
         // Log de headers (solo autorización para seguridad)
         log.info("--- Headers ---");
-        Enumeration<String> headerNames = request.getHeaderNames();
+        Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
-            String headerValue = request.getHeader(headerName);
+            String headerValue = requestWrapper.getHeader(headerName);
             
             // Solo loguear headers no sensibles
             if (!isSensitiveHeader(headerName)) {
@@ -50,9 +55,9 @@ public class LoggingFilter extends OncePerRequestFilter {
         
         // Log de parámetros
         log.info("--- Parameters ---");
-        Collections.list(request.getParameterNames())
+        Collections.list(requestWrapper.getParameterNames())
                 .forEach(param -> {
-                    String paramValue = request.getParameter(param);
+                    String paramValue = requestWrapper.getParameter(param);
                     if (isSensitiveParameter(param)) {
                         log.info("Parameter {}: [REDACTED]", param);
                     } else {
@@ -60,40 +65,48 @@ public class LoggingFilter extends OncePerRequestFilter {
                     }
                 });
         
-        // Log del body (seguro)
-        if ("POST".equalsIgnoreCase(request.getMethod()) || "PUT".equalsIgnoreCase(request.getMethod())) {
-            logRequestBodySecurely(request);
-        }
-        
         log.info("====================");
         
-        filterChain.doFilter(request, response);
+        // Ejecutar el resto de la cadena de filtros con los wrappers
+        filterChain.doFilter(requestWrapper, responseWrapper);
+        
+        // Log del body del request (después de que se procese)
+        if ("POST".equalsIgnoreCase(requestWrapper.getMethod()) || "PUT".equalsIgnoreCase(requestWrapper.getMethod())) {
+            logRequestBodySecurely(requestWrapper);
+        }
 
         long duration = System.currentTimeMillis() - start;
         
-        // Log del response (simple, sin wrapper)
+        // Log del response
         log.info("=== RESPONSE ===");
-        log.info("Status: {}", response.getStatus());
+        log.info("Status: {}", responseWrapper.getStatus());
         log.info("Duration: {} ms", duration);
-        log.info("ContentType: {}", response.getContentType());
+        log.info("ContentType: {}", responseWrapper.getContentType());
         log.info("====================");
+        
+        // Importante: copiar el response de vuelta al cliente
+        responseWrapper.copyBodyToResponse();
     }
     
     /**
-     * Loguea el body de forma segura (simplificado)
+     * Loguea el body de forma segura usando ContentCachingRequestWrapper
      */
-    private void logRequestBodySecurely(HttpServletRequest request) {
+    private void logRequestBodySecurely(ContentCachingRequestWrapper requestWrapper) {
         try {
-            int contentLength = request.getContentLength();
+            byte[] content = requestWrapper.getContentAsByteArray();
             
-            // No loguear bodies muy grandes
-            if (contentLength > MAX_BODY_SIZE) {
-                log.info("--- Request Body ---");
-                log.info("Body: [TOO LARGE - {} bytes]", contentLength);
+            if (content.length == 0) {
                 return;
             }
             
-            String body = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
+            // No loguear bodies muy grandes
+            if (content.length > MAX_BODY_SIZE) {
+                log.info("--- Request Body ---");
+                log.info("Body: [TOO LARGE - {} bytes]", content.length);
+                return;
+            }
+            
+            String body = new String(content, StandardCharsets.UTF_8);
             
             // Verificar si contiene datos sensibles
             if (containsSensitiveData(body)) {
