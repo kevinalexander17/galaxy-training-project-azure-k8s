@@ -1,2 +1,3 @@
 # galaxy-training-project
-system order-payment-notification for black friday issues.
+Order and payment processing platform for high-demand campaigns (Black Friday)
+
