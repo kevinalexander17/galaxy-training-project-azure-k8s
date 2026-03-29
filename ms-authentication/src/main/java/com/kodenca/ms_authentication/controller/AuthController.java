@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+import static com.kodenca.ms_authentication.util.Constants.USER_LOGGED_IN_SUCCESSFULLY;
+import static com.kodenca.ms_authentication.util.Constants.USER_REGISTERED_SUCCESSFULLY;
+
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthController implements IAuthController{
     
     private final IAuthService authService;
     
@@ -30,7 +33,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 BusinessResponse.<AuthResponse>builder()
                         .success(true)
-                        .message("User registered successfully")
+                        .message(USER_REGISTERED_SUCCESSFULLY)
                         .timestamp(LocalDateTime.now())
                         .data(response)
                         .build()
@@ -43,7 +46,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 BusinessResponse.<AuthResponse>builder()
                         .success(true)
-                        .message("User logged in successfully")
+                        .message(USER_LOGGED_IN_SUCCESSFULLY)
                         .timestamp(LocalDateTime.now())
                         .data(response)
                         .build()
