@@ -16,6 +16,7 @@ import com.kodenca.ms_authentication.security.JwtUtil;
 import com.kodenca.ms_authentication.util.RoleEnum;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -45,6 +46,7 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse register(final RegisterRequest registerRequest) {
         if (userRepository.findByUserNameWithRole(registerRequest.getUserName()).isPresent()) {
             throw new UserAlreadyExistsException(registerRequest.getUserName());
@@ -67,6 +69,7 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest loginRequest) {
 
         UserEntity user = userRepository.findByUserNameWithRole(loginRequest.getUserName())
